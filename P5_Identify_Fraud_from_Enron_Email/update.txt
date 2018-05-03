@@ -1,0 +1,4 @@
+1. 除 TOTAL 外，剔除了 THE TRAVEL AGENCY IN THE PARK 和 LOCKHART EUGENE E 两个异常值；
+2. 修改代码问题，使其能通过 tester.py 进行验证；
+3. 剔除标签，将特征显示为正确的数量；
+4. 根据审阅建议，对报告内容进行了补充修改。

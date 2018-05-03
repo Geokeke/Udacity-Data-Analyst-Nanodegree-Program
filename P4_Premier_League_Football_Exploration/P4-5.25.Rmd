@@ -1,0 +1,589 @@
+Gao Ke
+========================================================
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+# Load all of the packages that you end up using
+# in your analysis in this code chunk.
+
+# Notice that the parameter "echo" was set to FALSE for this code chunk.
+# This prevents the code from displaying in the knitted HTML output.
+# You should set echo=FALSE for all code chunks in your file.
+
+library(ggplot2)
+library(gridExtra)
+library(grid)
+library(psych)
+library(GGally)
+library(corrplot)
+```
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+# Load the Data
+wq <- read.csv("wineQualityWhites.csv")
+```
+
+# Univariate Plots Section
+
+首先检查一下数据集的质量。  
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+describe(wq)
+```
+
+本数据集包括 4898 个数据条目，每个条目有 13 个变量。13 个变量值的数量均为 4898，与数据集包含的数据条目数量相同，没有缺失值，可见此数据集是一个数据质量好、数据整齐干净的数据集。  
+下面打印数据集前五个条目查看变量和部分条目：  
+```{r echo=FALSE}
+head(wq)
+```
+
+从上表中可以观察到：  
+1. X 变量就是序号，没必要保留，可以删去；  
+2. quality 变量类型是 int，但 quality 的实际含义是专家评分，为了后续分析方便，应增加一个转变成 factor 类型的变量，我将其命名为quality_as_factor。  
+```{r echo=FALSE}
+# 删除数据集中无用的列
+wq <- subset(wq, select = -X)  
+
+# 为下面分析作图方便和更符合实际意义，
+# 将 quality 转变为factor 类型的变量
+wq$quality_as_factor <- factor(wq$quality, levels=c(0,1,2,3,4,5,6,7,8,9,10))
+```
+
+下面做直方图和箱线图观察各个变量的分布情况。 
+
+### Fixed acidity  
+Fixed acidity 是非挥发性酸，葡萄酒中的大部分酸都是非挥发性酸，比较稳定，不易挥发。  
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+par(mfrow=c(1,2))
+hist(wq$fixed.acidity, main="histogram of Fixed Acidity")
+boxplot(wq$fixed.acidity, main="boxplot of Fixed Acidity")
+
+```
+
+Fixed acidity 分布在 3.8 - 14.2 之间，范围大小为 10.4， 平均值 6.85，中位数 6.8，中位数和平均值较接近。直方图中表现为正态分布，箱线图表明它有部分异常值，主要集中在高的部分。  
+由于 Fixed acidity 偏度较大，再使用 log scale 观察分布：  
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+ggplot(aes(x = fixed.acidity), data = wq) + 
+  geom_histogram() + 
+  scale_x_log10()
+```
+
+可以发现其分布相对集中，呈单峰式特征。  
+
+### Volatile acidity
+Volatile acidity 是挥发性酸，代表葡萄酒中乙酸的含量，如果含量太高，葡萄酒会有不喜人的味道。  
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+par(mfrow=c(1, 2))
+hist(wq$volatile.acidity, main="histogram of Volatile acidity")
+boxplot(wq$volatile.acidity, main="boxplot of Volatile acidity")
+```
+
+Volatile acidity 最小值为 0.08，最大值为 1.1，范围大小 1.02，平均值为 0.28,中位数是 0.26。在直方图中表现为正偏态分布，从箱线图中可以看出，异常值都是高异常。  
+
+### Citric acid
+Citric acid 是柠檬酸，少量的柠檬酸可以为葡萄酒增加风味和新鲜度。  
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+par(mfrow=c(1, 2))
+hist(wq$citric.acid, main="histogram of Citric acid")
+boxplot(wq$citric.acid, main="boxplot of Citric acid")
+```
+
+Citric Acid 数值分布在0 - 1.66 之间，范围大小 1.66，平均值 0.33，中位数0.32。在直方图中呈现正态分布，箱线图反映其上下都有异常值，但高异常较多。  
+Citric Acid 偏度较大，再使用 log scale 观察分布：    
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+ggplot(aes(x = citric.acid), data = wq) + 
+  geom_histogram() + 
+  scale_x_log10()
+```
+
+
+
+### Residual Sugar
+Residual Sugar 是葡萄酒发酵完成后剩余的糖分含量，低于 1 g/L 残留糖的葡萄酒很少，大于 45 g/L 的葡萄酒就算很甜了。  
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+par(mfrow=c(1, 2))
+hist(wq$citric.acid, main="histogram of Residual Sugar")
+boxplot(wq$citric.acid, main="boxplot of Residual Sugar")
+```
+
+Residual Sugar 的最小值为 0.6，最大值是 65.8，范围大小 65.2，分布比较广。平均值是 6.39，中位数是 5.2。直方图表现为正偏斜分布，箱线图表现其有部分异常值，均为高异常。  
+Residual Sugar 偏度较大，再使用 log scale 观察分布：  
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+ggplot(aes(x = residual.sugar), data = wq) + 
+  geom_histogram() + 
+  scale_x_log10()
+```
+
+发现 Residual Sugar 集中分布于三个峰值附近。  
+
+### Chlorides
+chlorides 是氯化物，代表葡萄酒中的盐含量。  
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+par(mfrow=c(1, 2))
+hist(wq$chlorides, main="histogram of Chlorides")
+boxplot(wq$chlorides, main="boxplot of Chlorides")
+```
+
+Chlorides 分布在 0.01 - 0.35 之间，范围大小 0.34，平均值 0.05，中位数 0.04。直方图中表现为正偏斜分布，箱线图表明，其高低均有异常值，但高异常明显多。  
+Chlorides 偏度较大，再使用 log scale 观察分布： 
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+ggplot(aes(x = chlorides), data = wq) + 
+  geom_histogram() + 
+  scale_x_log10()
+```
+
+Chlorides 的含量集中分布在一个峰值附近。  
+
+### Free sulfur dioxide  
+Free sulfur dioxide 是 SO2 的自由形式，存在于分子 SO2 （作为溶解气体）和亚硫酸氢盐离子之间的平衡中; 它可以防止微生物生长和葡萄酒的氧化。  
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+par(mfrow=c(1, 2))
+hist(wq$free.sulfur.dioxide, main="histogram of Free sulfur dioxide")
+boxplot(wq$free.sulfur.dioxide, main="boxplot of Free sulfur dioxide")
+```
+
+Free sulfur dioxide 从 2 到 289 均有分布，范围 287，平均值 35.31，中位数 34。从直方图上看是正偏斜分布，从箱线图上可以观察到有很多高的异常值。  
+Free sulfur dioxide 偏度较大，再使用 log scale 观察分布：  
+
+```{r}
+ggplot(aes(x = free.sulfur.dioxide), data = wq) + 
+  geom_histogram() + 
+  scale_x_log10()
+```
+
+Free sulfur dioxide 集中分布在一个峰值附近。  
+
+### Total sulfur dioxide
+Total sulfur dioxide 是葡萄酒中游离的 SO2 和附着态 SO2 的总和。在低浓度下，SO2 在大部分葡萄酒中是检测不到的，但是在游离 SO2 浓度超过 50 ppm 时，SO2 在嗅觉和味觉上就会很明显。  
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+par(mfrow=c(1, 2))
+hist(wq$total.sulfur.dioxide, main="histogram of Total sulfur dioxide")
+boxplot(wq$total.sulfur.dioxide, main="boxplot of Total sulfur dioxide")
+```
+
+Total sulfur dioxide 分布在 9 - 440 之间，分布范围是 431，平均值138.36，中位数 134。直方图显示有轻微正 偏态，箱线图表面其有异常值，大部分为高异常。  
+
+
+### Density
+Density 是密度，葡萄酒的密度接近水，酒精和糖的含量会引起密度的轻微变化。  
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+par(mfrow=c(1, 2))
+hist(wq$density, main="histogram of Density")
+boxplot(wq$density, main="boxplot of Density")
+```
+
+Density 分布在 0.99 和 1.04 之间，分布范围是 0.05，变化范围小，平均值 0.99，中位数 0.99。直方图显示有正偏态，箱线图表明它有少量高异常值。  
+
+### pH
+pH 描述了从 0 （非常酸性）到 14 （非常碱性）的葡萄酒的酸性或碱性如何。大多数葡萄酒的 pH 值在 3-4 之间。    
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+par(mfrow=c(1, 2))
+hist(wq$pH, main="histogram of pH")
+boxplot(wq$pH, main="boxplot of pH")
+```
+  
+pH 的最大值为 3.82，最小值 2.72，范围 1.1，平均值 3.19，中位数 3.18，均为酸性。从直方图来看，基本正态分布，箱线图表明其高低均有异常值，高异常值多一些。  
+
+### Sulphates
+
+Sulphates 是添加剂，作用是抗微生物和抗氧化，可以产生 SO2。  
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+par(mfrow=c(1, 2))
+hist(wq$sulphates, main="histogram of Sulphates")
+boxplot(wq$sulphates, main="boxplot of Sulphates")
+```
+
+Sulphates 分布在 0.22 - 1.08 之间，范围 0.86，平均值 0.49，中位数 0.47。直方图显示其数据正偏态分布，箱线图表明其异常值均为高异常。  
+
+### Alcohol
+Alcohol 是酒精浓度。  
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+par(mfrow=c(1, 2))
+hist(wq$alcohol, main="histogram of Alcohol")
+boxplot(wq$alcohol, main="boxplot of Alcohol")
+```
+
+Alcohol 分布在 8 - 14.2 之间，变化范围 6.2，平均值 10.51， 中位数10.4。直方图显示其正偏态分布，箱线图表明其没有异常值。  
+
+### Quality
+Quality 是专家鉴定的葡萄酒品质。分越高，品质越好。  
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+par(mfrow=c(1, 2))
+hist(wq$quality, main="histogram of Quality")
+boxplot(wq$quality, main="boxplot of Quality")
+```
+
+葡萄酒质量分布在 3 - 9 之间，平均值 5.88， 中位数 6。接近正态分布，略微正偏态。有个别低异常值和高异常值。
+
+# Univariate Analysis
+
+### What is the structure of your dataset?
+本数据集有 4898 个数据条目，每个条目有 13 个变量。此数据集干净整齐，没有缺失值。   
+
+### What is/are the main feature(s) of interest in your dataset?
+此数据集的主要特征是包含白葡萄酒的专家评定的质量（较主观）和物理化学特征（客观），可以用物理化学特征分析影响白葡萄酒质量的物化因素是什么。下面的分析将主要围绕葡萄酒的质量和与其相关性较大的化学成分、物理因素展开。    
+
+### What other features in the dataset do you think will help support your investigation into your feature(s) of interest?
+在开始双变量分析之前，我认为跟葡萄酒的质量相关性较大的变量可能有酒精浓度、残留糖分、密度等。  
+
+### Did you create any new variables from existing variables in the dataset?
+我创建了 quality_as_factor 变量，将 quality 变量变成 factor。
+
+### Of the features you investigated, were there any unusual distributions? Did you perform any operations on the data to tidy, adjust, or change the form of the data? If so, why did you do this?
+有一些变量如 Fixed acidity、 Volatile acidity 和 Citric acid 都有异常值，并且绝大多数异常值都在偏大的一侧。为了在稍后的分析中凸显葡萄酒质量和其他因素的关系，下面将根据需要将明显异常的数据系统去除。
+
+
+# Bivariate Plots Section
+
+首先通过计算相关系数观察各变量间的相关性如何：
+
+```{r echo=FALSE, Bivariate_Plots}
+cor(wq[ ,-13])
+```
+
+如果将相关系数绝对值 > 0.4 认为两个变量高度相关，从上表中可以发现，高度相关的变量有：Residual sugar 和  Total sulfur dioxide、Residual sugar 和 Density、Residual sugar 和 Alcohol、Total sulfur dioxide 和 Free sulfur dioxide、Total sulfur dioxide 和 Density、Total sulfur dioxide 和 Alcohol、Alcohol 和 Density、Alcohol 和 Quality、Fixed acidity 和 pH。  
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+ggpairs(wq[,-13])
+```
+
+观察上图发现，虽然用 ggpairs 将两两变量的相关性和相关系数通过一个图表现出来，有很大的信息量，但是坐标数字有重叠，相关系数的数字显示也不全，下面再用 corrplot 作图观察变量的相关系数和相关性。  
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+wq_cor <- cor(wq[,-13])
+corrplot(wq_cor, method="ellipse")
+```
+
+上图清晰地表现了变量之间的相关系数和相关性。观察上图发现，Residual sugar 和  Total sulfur dioxide、 Density 呈高度正相关，而和 Alcohol呈高度负相关关系；Total sulfur dioxide 和 Free sulfur dioxide、Density 呈高度正相关关系，而和 Alcohol 呈现出高度负相关关系；Alcohol 和 Density 高度负相关，而与 Quality 高度正相关；Fixed acidity 和 pH 呈现高度负相关的关系。  
+
+
+### Residual sugar vs. Total sulfur dioxide
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+ggplot(aes(x = residual.sugar, y = total.sulfur.dioxide), data = wq) +
+  geom_jitter(alpha = .2)+
+  xlim(0,30) +
+  xlab("Residual sugar") +
+  ylab("Total sulfur dioxide") +
+  geom_smooth(method='lm', aes(group = 1))
+```
+
+Residual sugar 和 Total sulfur dioxide 之间相关系数 0.4，有高度正相关关系，这可能是由于 Total sulfur dioxide 可以抑制糖的消耗而引起的。  
+
+### Residual sugar vs. Density
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+ggplot(aes(x = residual.sugar, y = density), data = wq) +
+  geom_jitter(alpha = .2)+
+  xlim(0,30) +
+  ylim(0.985,1.005) +
+  xlab("Residual sugar") +
+  ylab("Density") +
+  geom_smooth(method='lm', aes(group = 1))
+```
+
+Residual sugar 和 Density 相关系数 0.8，高度正相关，Residual sugar 越多，Density 越大。
+
+### Residual sugar vs. Alcohol
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+ggplot(aes(x = residual.sugar, y = alcohol), data = wq) +
+  geom_jitter(alpha = .2) +
+  xlim(0,30) +
+  xlab("Residual sugar") +
+  ylab("Alcohol") +
+  geom_smooth(method='lm', aes(group = 1))
+```
+
+Residual sugar 和 Alcohol 相关系是 -0.45，呈高度负相关关系，原因为酒精是由糖转化来的，越多的糖转化为酒精，剩余的糖分就会越少。  
+
+### Total sulfur dioxide vs. Free sulfur dioxide
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+ggplot(aes(x = total.sulfur.dioxide, y = free.sulfur.dioxide), data = wq) +
+  geom_jitter(alpha = .2) +
+  ylim(0, 150) +
+  xlab("Total sulfur dioxide") +
+  ylab("Free sulfur dioxide") +
+  geom_smooth(method='lm', aes(group = 1))
+```
+
+Total sulfur dioxide 和 Free sulfur dioxide 相关系数 0.6，呈高度正相关，这是因为 Free sulfur dioxide 是 Total sulfur dioxide 的一部分，Free sulfur dioxide 含量的升高也会引起 Total sulfur dioxide 含量增加。  
+
+### Total sulfur dioxide vs. Density
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+ggplot(aes(x = total.sulfur.dioxide, y = density), data = wq) +
+  geom_jitter(alpha = .2) +
+  ylim(0.985, 1.01)+
+  xlab("Total sulfur dioxide") +
+  ylab("Density") +
+  geom_smooth(method='lm', aes(group = 1))
+```
+
+Total sulfur dioxide 和 Density 相关系数 0.5，呈正相关关系，Total sulfur dioxide 含量高，Density 也大。  
+
+### Total sulfur dioxide vs. Alcohol
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+ggplot(aes(x = total.sulfur.dioxide, y = alcohol), data = wq) +
+  geom_jitter(alpha = .3) +
+  xlim(0, 300) +
+  xlab("Total sulfur dioxide") +
+  ylab("Alcohol") +
+  geom_smooth(method='lm', aes(group = 1))
+```
+
+Total sulfur dioxide 和 Alcohol 相关系数 -0.4，呈高度负相关关系,可能的原因是，Total sulfur dioxide 会抑制糖分转化为酒精，所以 Total sulfur dioxide 含量高，Alcohol 浓度就低。  
+
+### Alcohol vs. Density
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+ggplot(aes(x = alcohol, y = density), data = wq) +
+  geom_jitter(alpha = .3) +
+  ylim(0.985, 1.01)+
+  xlab("Alcohol") +
+  ylab("Density") +
+  geom_smooth(method='lm', aes(group = 1))
+```
+
+Alcohol 和 Density 相关系数 -0.8，呈现高度负相关关系，可能的解释是，酒精的密度小于水，酒精浓度的增加会导致葡萄酒整体的密度减小。  
+
+### Alcohol vs. Quality  
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+ggplot(wq,aes(quality_as_factor, alcohol)) + 
+  geom_jitter(alpha=0.3) +
+  geom_boxplot( alpha = .5,color = 'blue')+
+  stat_summary(fun.y = "mean", 
+               geom = "point", 
+               color = "red")+
+  geom_smooth(method='lm', aes(group = 1))
+```
+
+Alcohol 和 Quality 相关系数 0.4，有高度的正相关关系。但从各质量的酒精浓度平均值来看，得分为 5 的酒精浓度最低，大于 5 和小于 5 的酒精浓度都要高一些。尚不清楚为何 Alcohol 在所有化学成分中，与 Quality 的相关性最大，猜测可能是发酵程度越高，葡萄酒质量越好。
+
+### Fixed acidity vs. pH
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+ggplot(aes(x = fixed.acidity, y = pH), data = wq) +
+  geom_jitter(alpha = .3) +
+  xlim(3,12) +
+  xlab("Fixed acidity") +
+  ylab("pH") +
+  geom_smooth(method='lm', aes(group = 1))
+```
+
+Fixed acidity 和 pH 高度负相关。这一点比较好解释，因为非挥发性酸主要是醋酸，醋酸含量高，酸性强， pH 就低。  
+
+### Free sulfur dioxide vs. Quality
+
+从数据描述里可知，Free sulfur dioxide 会影响白葡萄酒的风味。但 Free sulfur dioxide 与 Quality 之间的相关性并不高。  
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+ggplot(data = wq, aes(factor(quality), free.sulfur.dioxide)) + 
+  geom_jitter(alpha=0.3) +
+  geom_boxplot( alpha = .5,color = 'blue')+
+  stat_summary(fun.y = "mean", 
+               geom = "point", 
+               color = "red")+
+  scale_y_continuous(limits = c(0, 150)) +
+  geom_smooth(method='lm', aes(group = 1)) +
+  ggtitle("Free sulfur dioxide and Quality")+
+  ylab("Free sulfur dioxide")+
+  xlab("Quality")
+```
+
+上图也反映其二者之间没有明显线性相关性。  
+但还可以从描述文件中得知，当 Free sulfur dioxide 较低时影响并不大，但当 Free sulfur dioxide > 50ppm 时，会产生明显的令人不悦的味道。  
+那么如果只看Free sulfur dioxide > 50ppm 的数据，Free sulfur dioxide 与 Quality 之间是否有相关性呢？ 
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+# 当 Free sulfur dioxide > 50ppm 时，葡萄酒会产生明显的令人不悦的味道
+# 只取Free sulfur dioxide > 50ppm 的数据分析
+ggplot(data = subset(wq, wq$free.sulfur.dioxide > 50), aes(factor(quality), free.sulfur.dioxide)) + 
+  geom_jitter(alpha=0.3) +
+  geom_boxplot( alpha = .5,color = 'blue')+
+  stat_summary(fun.y = "mean", 
+               geom = "point", 
+               color = "red")+
+  scale_y_continuous(limits = c(50, 180)) +
+  geom_smooth(method='lm', aes(group = 1)) +
+  ggtitle("Free sulfur dioxide (> 50 ppm) and Quality")+
+  ylab("Free sulfur dioxide(> 50 ppm)")+
+  xlab("Quality")
+```
+
+果然，从上图可以看出，当Free sulfur dioxide > 50ppm 时，二者呈现出明显的负相关关系。  
+
+# Bivariate Analysis
+
+### Talk about some of the relationships you observed in this part of the investigation. How did the feature(s) of interest vary with other features in the dataset?
+数据集中的很多变量具有高度相关性（|r| > 0.4）：Residual sugar 和  Total sulfur dioxide、 Density 呈正相关，而和 Alcohol呈负相关关系；Total sulfur dioxide 和 Free sulfur dioxide、Density 呈正相关关系，而和 Alcohol 呈现出负相关关系；Alcohol 和 Density 负相关，而与 Quality正相关；Fixed acidity 和 pH 呈现负相关的关系。  
+我比较感兴趣的与 Quality 相关的因素只有一个 Alcohol。
+
+### Did you observe any interesting relationships between the other features (not the main feature(s) of interest)?
+
+除了Alcohol 与 Quality 有明显的正相关关系外，其他很多变量也有有趣的相关性，在上一个问题中我已经列举出来了，在这里挑几对试图解释一下：  
+1. **Residual sugar 和 Density 呈正相关，Alcohol 和 Density 负相关**： 在葡萄酒中，与密度关系较大的两个变量主要是剩余糖分和酒精浓度。相同温压条件下，糖的密度大于水，酒精密度小于水，所以在葡萄酒中就表现为，剩余糖分越多，密度越大，酒精浓度越高，密度越小；  
+2. **Total sulfur dioxide 和 Free sulfur dioxide 呈正相关**：在葡萄酒中，游离态的 SO2 和附着态的 SO2 存在平衡关系，当总的 SO2 浓度高的时候，游离态的 SO2 自然也增多；  
+3. **Total sulfur dioxide 和  Residual sugar 呈正相关，而和 Alcohol呈负相关**：SO2 可以起到抑制氧化和微生物的作用，当总 SO2 含量高的时候，微生物的发酵作用会受到抑制，糖转化为酒精的过程就会减缓甚至停止。因此，SO2 浓度高，残留糖多而酒精浓度低（发酵不充分）；SO2浓度低，残留糖少而酒精浓度高（发酵充分）。  
+
+### What was the strongest relationship you found?
+
+我发现的最强的关系是 Residual sugar 和 Density 的正相关关系（r > 0.8），其次是 Alcohol 和 Density 的负相关关系（r < -0.7）。
+
+
+# Multivariate Plots Section
+
+### Alcohol 、 Residual sugar 和 Density 的关系
+
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, Multivariate_Plots}
+ggplot(aes(x = alcohol, y = residual.sugar, color = density), data = wq) +
+  geom_point(alpha = 0.3, size = 1, position = 'jitter') +
+  scale_y_continuous(limits = c(0, 30))+ 
+  ggtitle("Alcohol and Residual Sugar vs. Density 的关系") +
+  ylab("Residual Sugar") +
+  xlab("Alcohol")
+
+```
+
+从上图可以发现，Density 的高值主要集中在左上角，说明酒精浓度越低，残留糖越多，密度越大。  
+
+### Density、Alcohol 和 Quality
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+ggplot(aes(x = alcohol, y = density, color = quality_as_factor), data = wq) +
+  geom_point(alpha = 0.5, size = 1, position = 'jitter') +
+  geom_smooth(method = "lm", se = FALSE,size=1) +
+  scale_color_brewer(palette = "Blues") +
+  scale_x_continuous() + 
+  scale_y_continuous(limits = c(.985,1.005))+
+ ggtitle("alcohol by density")+
+ ylab("density (g/ml)")+
+ xlab("alcohol content (mg/L)")
+```
+
+观察上图发现，高质量的葡萄酒主要集中在图的右下角，说明酒精含量高，密度低可能是高质量的特征。
+
+### Residual sugar、 Total sulfur dioxide 和Alcohol
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+ggplot(aes(x = total.sulfur.dioxide, y = residual.sugar, color = alcohol), data = wq) +
+  geom_point(alpha = 0.5, size = 1, position = 'jitter') +
+  scale_x_continuous(limits = c(0, 300)) + 
+  scale_y_continuous(limits = c(0, 30))+
+  ggtitle("Residual sugar、 Total sulfur dioxide 和Alcohol")+
+  ylab("Residual sugar")+
+  xlab("Total sulfur dioxide")
+```
+
+酒精浓度高的样本主要集中在左下角。说明总 SO2 浓度低，残留糖少的酒浓度低。这可能是因为 SO2 会抑制由糖到酒精的转化过程。  
+
+### Total sulfur dioxide 、Alcohol 和 Density
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+ggplot(aes(x = total.sulfur.dioxide, y = alcohol, color = density), data = wq) +
+  geom_point(alpha = 0.3, size = 1, position = 'jitter') +
+  scale_x_continuous(limits = c(0, 500)) + 
+  scale_y_continuous(limits = c(6, 15))+
+  ggtitle("Total sulfur dioxide 、Alcohol 和 Density")+
+  ylab("Alcohol")+
+  xlab("Total sulfur dioxide")
+```
+
+密度大的点主要集中在右下角，说明总 SO2 和酒精浓度呈负相关，总 SO2 与密度正相关，酒精浓度与密度负相关。  
+
+### Total sulfur dioxide 、Residual sugar 和 Density
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+ggplot(aes(x = total.sulfur.dioxide, y = residual.sugar, color = density), data = wq) +
+  geom_point(alpha = 0.3, size = 1, position = 'jitter') +
+  scale_x_continuous(limits = c(0, 300)) + 
+  scale_y_continuous(limits = c(0, 30))+
+  ggtitle("Total sulfur dioxide 、Residual sugar 和 Density")+
+  ylab("Residual sugar")+
+  xlab("Total sulfur dioxide")
+```
+
+上图揭示了密度与残留糖分以及总 SO2 的关系。残留糖分和总 SO2呈正相关，残留糖分和密度正相关，总 SO2也和密度呈正相关。  
+   
+# Multivariate Analysis
+
+### Talk about some of the relationships you observed in this part of the investigation. Were there features that strengthened each other in terms of looking at your feature(s) of interest?
+
+影响质量的主要因素是酒精浓度，而酒精浓度又和密度、残留糖分和总二氧化硫浓度密切相关。
+
+### Were there any interesting or surprising interactions between features?
+
+有趣的发现是，酒精浓度、密度、残留糖分、总二氧化硫浓度这四个变量是两两互相关联的，随便抽出两个就有高度相关性。  
+我对于此现象的解释是，总二氧化硫的含量会抑制微生物活动，从而会抑制糖转化为酒精的过程，而糖和酒精的含量对于葡萄酒的密度又有直接的影响。因此这四个变量会有高度相关性。  
+
+### OPTIONAL: Did you create any models with your dataset? Discuss the strengths and limitations of your model.
+
+------
+
+# Final Plots and Summary
+
+### Plot One
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, Plot_One}
+ggplot(data = subset(wq, wq$free.sulfur.dioxide > 50), aes(factor(quality), free.sulfur.dioxide)) + 
+  geom_jitter(alpha=0.3) +
+  geom_boxplot( alpha = .5,color = 'blue')+
+  stat_summary(fun.y = "mean", 
+               geom = "point", 
+               color = "red")+
+  scale_y_continuous(limits = c(50, 180)) +
+  geom_smooth(method='lm', aes(group = 1)) +
+  ggtitle("Free sulfur dioxide (> 50 ppm) and Quality")+
+  ylab("Free sulfur dioxide(> 50 ppm)")+
+  xlab("Quality")
+
+```
+
+### Description One
+
+从数据介绍里得知，当游离 SO2 的浓度比较低的时候，它的存在不易被察觉，但是当游离 SO2 浓度大于 50 ppm 时 会有明显的醋味，所以我把 < 50 ppm 的数据排除，看游离 SO2 的浓度与白葡萄酒质量的关系，果然，当游离 SO2 浓度大于 50 ppm，二者呈明显的负相关关系。  
+
+### Plot Two
+```{r echo=FALSE, message=FALSE, warning=FALSE, Plot_Two}
+ggplot(wq,aes(factor(quality), alcohol)) + 
+  geom_jitter(alpha=0.3) +
+  geom_boxplot( alpha = .5,color = 'blue')+
+  stat_summary(fun.y = "mean", 
+               geom = "point", 
+               color = "red")+
+  geom_smooth(method='lm', aes(group = 1)) +
+  ggtitle("Alcohol and Quality")+
+  ylab("Alcohol")+
+  xlab("Quality")
+
+```
+
+### Description Two
+此图整合了 Quality 和 Alcohol 两个变量的散点图和箱线图，反映了Quality 和 Alcohol 之间高度正相关关系，暗示酒精浓度可能是衡量白葡萄酒质量的重要指标。  
+
+### Plot Three
+```{r echo=FALSE, message=FALSE, warning=FALSE, Plot_Three}
+ggplot(aes(x = alcohol, y = density, color = quality_as_factor), data = wq) +
+  geom_point(alpha = 0.5, size = 1, position = 'jitter') +
+  geom_smooth(method = "lm", se = FALSE,size=1) +
+  scale_color_brewer(palette = "Blues") +
+  scale_x_continuous() + 
+  scale_y_continuous(limits = c(.985,1.005))+
+ ggtitle("alcohol  density and quality")+
+ ylab("density (g/ml)")+
+ xlab("alcohol content (mg/L)")
+```
+
+### Description Three  
+此图包含了 Alcohol、Density 和 Quality 三个变量。从图中可以观察出，Alcohol、Density 呈负相关关系，即酒精浓度越高，密度越小。同时可以观察到，高质量的葡萄酒集中在图的右下角区域，低质量的集中在左上角区域，表明葡萄酒质量与酒精浓度呈正相关，与密度呈负相关。   
+
+------
+
+# Reflection  
+### 1. 我在分析中的哪个阶段遇到了困难？  
+我在筛选合适的数据，去除异常值的阶段遇到了困难，比如排除异常值的标准是什么？排除异常值如何进行操作？这个问题没有很好地解决。 
+
+### 2. 我在哪个阶段取得了成功？  
+我在探索性数据分析阶段找出了 Quality 和 Alcohol 的正相关关系、Quality 和 Free sulfur dioxide(> 50 ppm) 的负相关关系； 发现酒精浓度、密度、残留糖分、总二氧化硫浓度这四个变量是两两互相关联的，并尝试解释。  
+
+### 3. 将来工作中还可以通过哪些方式使分析更丰富（如：附加数据和分析）？  
+我注意到除了此白葡萄酒数据集外，还有一个红葡萄酒数据集。我想将这两个数据集进行对比分析，一定可以得出一些有趣的结论。  

@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <link href="stylesheet.css" rel="stylesheet">
+    <script src="http://d3js.org/d3.v4.min.js"></script>
+    <script src="http://dimplejs.org/dist/dimple.v2.3.0.min.js"></script>
+  </head>
+  <body>
+<!--     <script>
+      function secondQuarter() {
+        var svg1 = dimple.newSvg("#chartContainer", 670, 400);
+        d3.select('#chartContainer svg')
+          .html(' ')
+          .csv("flight_delay_cause_mini.csv", function (data) {
+          var myChart = new dimple.chart(svg1, data);
+          myChart.setBounds(20, 20, 460, 360) 
+          myChart.addMeasureAxis("p", "Second Quarter");
+          var ring = myChart.addSeries("Cause", dimple.plot.pie);
+          ring.innerRadius = "50%";
+          myChart.addLegend(500, 20, 90, 300, "left");
+          myChart.draw();
+       })
+      };
+    </script> -->
+    <h1>Flight Delays by Cause (2008)</h1>
+    <div id="chartContainer" align="center">
+      <h2>First Quarter</h2>
+      <script type="text/javascript">
+        var svg = dimple.newSvg("#chartContainer", 670, 400);
+        d3.csv("flight_delay_cause_mini.csv", function (data) {
+          var myChart = new dimple.chart(svg, data);
+          myChart.setBounds(20, 20, 460, 360) 
+          myChart.addMeasureAxis("p", "First Quarter");
+          var ring = myChart.addSeries("Cause", dimple.plot.pie);
+          ring.innerRadius = "50%";
+          myChart.addLegend(500, 20, 90, 300, "left");
+          myChart.draw();
+        });
+      </script>
+      <h2>Second Quarter</h2>
+      <script type="text/javascript">
+        var svg1 = dimple.newSvg("#chartContainer", 670, 400);
+        d3.csv("flight_delay_cause_mini.csv", function (data) {
+          var myChart = new dimple.chart(svg1, data);
+          myChart.setBounds(20, 20, 460, 360) 
+          myChart.addMeasureAxis("p", "Second Quarter");
+          var ring = myChart.addSeries("Cause", dimple.plot.pie);
+          ring.innerRadius = "50%";
+          myChart.addLegend(500, 20, 90, 300, "left");
+          myChart.draw();
+        });
+      </script>
+      <h2>Third Quarter</h2>
+      <script type="text/javascript">
+        var svg2 = dimple.newSvg("#chartContainer", 670, 400);
+        d3.csv("flight_delay_cause_mini.csv", function (data) {
+          var myChart = new dimple.chart(svg2, data);
+          myChart.setBounds(20, 20, 460, 360) 
+          myChart.addMeasureAxis("p", "Third Quarter");
+          var ring = myChart.addSeries("Cause", dimple.plot.pie);
+          ring.innerRadius = "50%";
+          myChart.addLegend(500, 20, 90, 300, "left");
+          myChart.draw();
+        });
+      </script>
+      <h2>Fourth Quarter</h2>
+      <script type="text/javascript">
+        var svg3 = dimple.newSvg("#chartContainer", 670, 400);
+        d3.csv("flight_delay_cause_mini.csv", function (data) {
+          var myChart = new dimple.chart(svg3, data);
+          myChart.setBounds(20, 20, 460, 360) 
+          myChart.addMeasureAxis("p", "Fourth Quarter");
+          var ring = myChart.addSeries("Cause", dimple.plot.pie);
+          ring.innerRadius = "50%";
+          myChart.addLegend(500, 20, 90, 300, "left");
+          myChart.draw();
+        });
+      </script>
+<!--       <center><button onclick="firstQuarter()" type="button">First Quarter</button></center>
+      <center><button onclick="secondQuarter()" type="button">Second Quarter</button></center>
+      <center><button type="button">Third Quarter</button></center>
+      <center><button type="button">Fourth Quarter</button></center> -->
+    </div>
+    <div id="textContainer" >
+      <p id="intro">
+        The above diagrams show four quarters' ring charts of flight delays by cause,2008,USA.
+      </p>
+      <p id="introduction">
+        A flight is considered delayed when it arrived 15 or more minutes than the schedule (see definitions in Frequently Asked Questions). Delayed minutes are calculated for delayed flights only. 
+      </p>
+      <p id="explanation">
+        When multiple causes are assigned to one delayed flight, each cause is prorated based on delayed minutes it is responsible for. The displayed numbers are rounded and may not add up to the total.
+      </p>
+      <p id="source">
+        SOURCE: Bureau of Transportation Statistics
+      </p>
+    </div>
+  </body>
+</html>

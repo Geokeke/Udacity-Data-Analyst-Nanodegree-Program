@@ -1,0 +1,2 @@
+https://github.com/yajiez/osm-data-wrangling
+https://github.com/pratyush19/Udacity-Data-Analyst-Nanodegree/tree/master/P3-OpenStreetMap-Wrangling-with-SQL
